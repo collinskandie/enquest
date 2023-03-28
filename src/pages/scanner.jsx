@@ -1,58 +1,64 @@
-import { QrReader } from 'react-qr-reader';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
+import Quagga from 'quagga';
 
-function BarcodeScanner() {
-  const [cameraPermission, setCameraPermission] = useState(false);
-  const videoRef = useRef();
+const Scanner = ({ onDetected }) => {
+	const videoRef = useRef();
+	const canvasRef = useRef();
 
-  useEffect(() => {
-    async function requestCameraPermission() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        setCameraPermission(true);
-        console.log('Camera permission granted');
-        videoRef.current.srcObject = stream;
-      } catch (error) {
-        console.error('Camera permission denied', error);
-      }
-    }
-    requestCameraPermission();
-  }, []);
+	useEffect(() => {
+		Quagga.init(
+			{
+				inputStream: {
+					name: 'Live',
+					type: 'LiveStream',
+					target: videoRef.current
+				},
+				decoder: {
+					readers: [ 'ean_reader' ]
+				}
+			},
+			(err) => {
+				if (err) {
+					console.log(err);
+					return;
+				}
+				Quagga.start();
+				return () => {
+					Quagga.stop();
+				};
+			}
+		);
 
-  const handleVideoPlay = () => {
-    console.log('Video is playing');
-  };
+		Quagga.onDetected((data) => {
+			onDetected(data.codeResult.code);
+		});
 
-  const handleScan = (data) => {
-    if (data) {
-      alert(`Barcode scanned: ${data}`);
-    }
-  };
+		return () => {
+			Quagga.offDetected(onDetected);
+		};
+	}, []);
 
-  const handleError = (error) => {
-    console.error(error);
-  };
+	const drawLine = (boundingBox, canvas) => {
+		if (canvas) {
+			const ctx = canvas.getContext('2d');
+			ctx.beginPath();
+			ctx.moveTo(boundingBox[0].x, boundingBox[0].y);
+			ctx.lineTo(boundingBox[1].x, boundingBox[1].y);
+			ctx.lineTo(boundingBox[2].x, boundingBox[2].y);
+			ctx.lineTo(boundingBox[3].x, boundingBox[3].y);
+			ctx.lineTo(boundingBox[0].x, boundingBox[0].y);
+			ctx.lineWidth = 4;
+			ctx.strokeStyle = 'green';
+			ctx.stroke();
+		}
+	};
 
-  return (
-    <>
-      {cameraPermission && (
-        <QrReader delay={300} onError={handleError} onScan={handleScan} style={{ width: '1000px' }}>
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            playsInline
-            onLoadedMetadata={() => {
-              console.log('Video metadata loaded');
-              videoRef.current.play();
-            }}
-            onPlay={handleVideoPlay}
-            style={{ width: '100%' }}
-          />
-        </QrReader>
-      )}
-    </>
-  );
-}
+	return (
+		<div>
+			<video ref={videoRef} style={{ width: '100%' }} />
+			<canvas ref={canvasRef} style={{ position: 'absolute' }} />
+		</div>
+	);
+};
 
-export default BarcodeScanner;
+export default Scanner;

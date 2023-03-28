@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Switch, Route, Link, Redirect } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import logo from '../logo.svg';
 import './SplashScreen.css';
 
@@ -9,7 +9,7 @@ const SplashScreen = () => {
 		setTimeout(() => {
 			// navigate to the home screen after the async operation is done
 			// replace this with the appropriate code for navigating to your home screen
-			window.location.href = '/home';
+			// window.location.href = '/home';
 		}, 3000);
 	}, []);
 

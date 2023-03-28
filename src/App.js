@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
-import BarcodeScanner from './pages/scanner';
+import Scan from './pages/scan';
 import SplashScreen from './pages/splash';
 
 function App() {
@@ -9,8 +9,7 @@ function App() {
 			<Router>
 				<Routes>
 					<Route path="/" element={<SplashScreen />} />
-					<Route path="/scanner" element={<BarcodeScanner />} />
-					<Route path="/home" element={<BarcodeScanner />} />
+					<Route path="/scanner" element={<Scan />} />					
 					<Route path="/contact" element={<SplashScreen />} />
 				</Routes>
 			</Router>
